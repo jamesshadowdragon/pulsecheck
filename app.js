@@ -25,7 +25,7 @@ function delToken(id) {
     localStorage.setItem("pulsecheck_tokens", JSON.stringify(x));
 }
 
-// API wrapper with proper error handling
+// API wrapper
 async function api(path, opt = {}) {
     const url = API + path;
     const response = await fetch(url, {
@@ -40,7 +40,6 @@ async function api(path, opt = {}) {
     try {
         data = await response.json();
     } catch {
-        // If response isn't JSON
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
@@ -95,7 +94,7 @@ function render() {
     stats();
     const l = $("#list");
     if (!monitors.length) {
-        l.innerHTML = '<div class="empty"><b>No monitors yet</b><br>Add a URL above to create your first monitor.</div>';
+        l.innerHTML = '<div class="empty"><b>No monitors yet</b>Add a URL above to create your first monitor.</div>';
         return;
     }
     l.innerHTML = monitors.map(m => `
@@ -128,16 +127,16 @@ async function load(note = false) {
         const data = await api("/api/monitors.php");
         monitors = data.monitors || [];
         render();
-        $("#apiState").textContent = "API online";
+        $("#apiState").textContent = "API online ✅";
         if (note) toast("Refreshed ✅");
     } catch (e) {
         console.error('Load error:', e);
-        $("#apiState").textContent = "API unavailable";
+        $("#apiState").textContent = "API unavailable ❌";
         $("#list").innerHTML = `
             <div class="empty">
                 <b>Could not reach API</b><br>
                 ${esc(e.message)}<br><br>
-                Make sure the API is running at: ${API}
+                <span style="font-size:12px;color:#666;">Make sure the API is running at: ${API}</span>
             </div>
         `;
     }
@@ -147,6 +146,7 @@ async function load(note = false) {
 $("#addForm").addEventListener("submit", async e => {
     e.preventDefault();
     let u = $("#urlInput").value.trim();
+    if (!u) return;
     if (!/^https?:\/\//i.test(u)) u = "https://" + u;
     
     const b = $("#addBtn");
@@ -201,13 +201,13 @@ $("#list").addEventListener("click", async e => {
             const checks = data.checks || [];
             h.innerHTML = checks.length ? checks.map(x => `
                 <div class="historyItem">
-                    <b style="color:${x.success ? 'green' : 'red'}">${x.success ? "✅ UP" : "❌ DOWN"}</b><br>
-                    Status: ${esc(x.status_code)} · ${esc(x.response_time)}ms<br>
+                    <b style="color:${x.success ? '#84ff9b' : '#ff7373'}">${x.success ? "✅ UP" : "❌ DOWN"}</b><br>
+                    ${esc(x.status_code)} · ${esc(x.response_time)}ms<br>
                     ${esc(new Date(x.checked_at).toLocaleString())}
                 </div>
             `).join("") : "No checks yet.";
         } catch (err) {
-            h.textContent = "❌ " + err.message;
+            h.innerHTML = "❌ " + esc(err.message);
         }
         return;
     }
@@ -225,11 +225,11 @@ $("#list").addEventListener("click", async e => {
         b.disabled = true;
         b.textContent = "Checking…";
         try {
-            await api(`/api/check.php?id=${id}`, {
+            const result = await api(`/api/check.php?id=${id}`, {
                 method: "POST",
                 headers: { "X-PulseCheck-Token": t }
             });
-            toast("Check complete ✅");
+            toast(`Check complete: ${result.status === 'up' ? '✅ UP' : '❌ DOWN'}`);
             await load();
         } catch (err) {
             console.error('Check error:', err);
@@ -260,6 +260,7 @@ $("#list").addEventListener("click", async e => {
             toast("❌ " + err.message);
         } finally {
             b.disabled = false;
+            b.textContent = "Delete";
         }
     }
 });
