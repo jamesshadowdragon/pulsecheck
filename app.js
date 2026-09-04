@@ -1,4 +1,11 @@
+// ============================================================
+// PULSECHECK - Frontend (Vercel)
+// Backend API: Render
+// ============================================================
+
+// ✅ UPDATE THIS to your Render API URL
 const API = "https://pulse-checkerapi.onrender.com";
+
 const $ = s => document.querySelector(s);
 let monitors = [];
 
@@ -136,7 +143,7 @@ async function load(note = false) {
             <div class="empty">
                 <b>Could not reach API</b><br>
                 ${esc(e.message)}<br><br>
-                <span style="font-size:12px;color:#666;">Make sure the API is running at: ${API}</span>
+                <span style="font-size:12px;color:#666;">API: ${API}</span>
             </div>
         `;
     }
