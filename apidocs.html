@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>PulseCheck API Documentation</title>
+    <style>
+        /* ── Reset & base ── */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #0b0b0b;
+            color: #e4e4e4;
+            line-height: 1.6;
+            padding: 2rem 1.5rem;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        /* ── Header ── */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            border-bottom: 1px solid #282828;
+            padding-bottom: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            background: #4ade80;
+            border-radius: 50%;
+            box-shadow: 0 0 16px #4ade8066;
+            display: inline-block;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        .header h1 span {
+            color: #6b6b6b;
+            font-weight: 400;
+        }
+
+        .badge {
+            background: #1e1e1e;
+            border: 1px solid #333;
+            border-radius: 999px;
+            padding: 0.4rem 1rem;
+            font-size: 0.8rem;
+            color: #a0a0a0;
+        }
+
+        .badge strong {
+            color: #4ade80;
+            font-weight: 600;
+        }
+
+        /* ── Base URL ── */
+        .base-url {
+            background: #141414;
+            border: 1px solid #282828;
+            border-radius: 12px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1.5rem;
+        }
+
+        .base-url code {
+            background: #1f1f1f;
+            padding: 0.3rem 0.9rem;
+            border-radius: 6px;
+            font-size: 1rem;
+            color: #7ecfff;
+            word-break: break-all;
+        }
+
+        .base-url .label {
+            color: #888;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .base-url .copy-btn {
+            margin-left: auto;
+            background: #222;
+            border: none;
+            color: #ccc;
+            padding: 0.3rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: background 0.2s;
+        }
+
+        .base-url .copy-btn:hover {
+            background: #333;
+        }
+
+        /* ── Section titles ── */
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin: 2.5rem 0 1rem;
+            letter-spacing: -0.01em;
+        }
+
+        h2:first-of-type {
+            margin-top: 0;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 1.8rem 0 0.4rem;
+            color: #d0d0d0;
+        }
+
+        .sub {
+            color: #888;
+            font-size: 0.95rem;
+            margin-bottom: 1.2rem;
+        }
+
+        /* ── Endpoint cards ── */
+        .endpoint {
+            background: #111;
+            border: 1px solid #262626;
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: border-color 0.2s;
+        }
+
+        .endpoint:hover {
+            border-color: #3a3a3a;
+        }
+
+        .endpoint-header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.75rem 1.2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .method {
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0.2rem 0.9rem;
+            border-radius: 999px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            background: #1e1e1e;
+            border: 1px solid #333;
+        }
+
+        .method.get {
+            color: #60a5fa;
+            border-color: #1e3a5f;
+        }
+        .method.post {
+            color: #4ade80;
+            border-color: #1a3a2a;
+        }
+        .method.delete {
+            color: #f87171;
+            border-color: #4a1a1a;
+        }
+
+        .endpoint-path {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 1rem;
+            color: #e4e4e4;
+            word-break: break-all;
+        }
+
+        .endpoint-desc {
+            color: #aaa;
+            font-size: 0.95rem;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Code blocks ── */
+        pre {
+            background: #0d0d0d;
+            border: 1px solid #282828;
+            border-radius: 10px;
+            padding: 1rem 1.2rem;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            color: #d4d4d4;
+            margin: 0.5rem 0 0.8rem;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        pre .comment {
+            color: #6a9955;
+        }
+        pre .string {
+            color: #ce9178;
+        }
+        pre .key {
+            color: #9cdcfe;
+        }
+        pre .number {
+            color: #b5cea8;
+        }
+        pre .keyword {
+            color: #c586c0;
+        }
+
+        .inline-code {
+            background: #1a1a1a;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #d4d4d4;
+        }
+
+        /* ── Tables ── */
+        .param-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin: 0.75rem 0 0.5rem;
+        }
+
+        .param-table th,
+        .param-table td {
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #222;
+        }
+
+        .param-table th {
+            color: #888;
+            font-weight: 500;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .param-table td {
+            color: #c0c0c0;
+        }
+
+        .param-table .required {
+            color: #f87171;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        /* ── Response examples ── */
+        .response-block {
+            margin-top: 0.5rem;
+        }
+
+        .response-block .label {
+            font-size: 0.75rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid #282828;
+            color: #666;
+            font-size: 0.9rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .footer a {
+            color: #888;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer a:hover {
+            color: #eee;
+        }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            body {
+                padding: 1rem;
+            }
+            .header h1 {
+                font-size: 1.3rem;
+            }
+            .endpoint {
+                padding: 1rem;
+            }
+            .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .base-url {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .base-url .copy-btn {
+                margin-left: 0;
+            }
+            .param-table {
+                font-size: 0.8rem;
+            }
+            .param-table th,
+            .param-table td {
+                padding: 0.4rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+
+        <!-- ===== HEADER ===== -->
+        <header class="header">
+            <div class="header-left">
+                <span class="dot"></span>
+                <h1>PulseCheck <span>API</span></h1>
+            </div>
+            <div class="badge">
+                🟢 <strong>Live</strong> &nbsp;·&nbsp; v2.0.0
+            </div>
+        </header>
+
+        <!-- ===== BASE URL ===== -->
+        <div class="base-url">
+            <span class="label">Base URL</span>
+            <code id="baseUrlDisplay">https://pulse-checkerapi.onrender.com</code>
+            <button class="copy-btn" onclick="copyBaseUrl()">📋 Copy</button>
+        </div>
+
+        <!-- ===== INTRO ===== -->
+        <p style="color:#aaa; font-size:1.05rem; margin-bottom:2rem;">
+            A lightweight, file-based uptime monitoring API.  
+            Track website availability, response times, and history — all with simple REST endpoints.
+        </p>
+
+        <!-- ============================================================ -->
+        <!-- 1. GET ALL MONITORS                                           -->
+        <!-- ============================================================ -->
+        <h2>📋 Monitors</h2>
+
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="endpoint-path">/api/monitors.php</span>
+            </div>
+            <div class="endpoint-desc">
+                Retrieve a list of all monitors. Tokens and check history are hidden.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl https://pulse-checkerapi.onrender.com/api/monitors.php</pre>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"success"</span>: <span class="keyword">true</span>,
+  <span class="key">"monitors"</span>: [
+    {
+      <span class="key">"id"</span>: <span class="number">1</span>,
+      <span class="key">"url"</span>: <span class="string">"https://example.com"</span>,
+      <span class="key">"status"</span>: <span class="string">"up"</span>,
+      <span class="key">"uptime"</span>: <span class="number">99.5</span>,
+      <span class="key">"response_time"</span>: <span class="number">125</span>,
+      <span class="key">"last_check"</span>: <span class="string">"2026-09-04T10:30:00Z"</span>,
+      <span class="key">"created_at"</span>: <span class="string">"2026-09-04T05:58:07-04:00"</span>
+    }
+  ]
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 2. GET SPECIFIC MONITOR                                      -->
+        <!-- ============================================================ -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="endpoint-path">/api/monitors.php?id={id}</span>
+            </div>
+            <div class="endpoint-desc">
+                Fetch a single monitor by its ID.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl https://pulse-checkerapi.onrender.com/api/monitors.php?id=1</pre>
+
+            <table class="param-table">
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">id</span></td><td>integer</td><td>Monitor ID <span class="required">required</span></td></tr>
+            </table>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"success"</span>: <span class="keyword">true</span>,
+  <span class="key">"monitor"</span>: {
+    <span class="key">"id"</span>: <span class="number">1</span>,
+    <span class="key">"url"</span>: <span class="string">"https://example.com"</span>,
+    <span class="key">"status"</span>: <span class="string">"up"</span>,
+    <span class="key">"uptime"</span>: <span class="number">99.5</span>,
+    <span class="key">"response_time"</span>: <span class="number">125</span>,
+    <span class="key">"last_check"</span>: <span class="string">"2026-09-04T10:30:00Z"</span>,
+    <span class="key">"created_at"</span>: <span class="string">"2026-09-04T05:58:07-04:00"</span>
+  }
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 3. CREATE MONITOR                                            -->
+        <!-- ============================================================ -->
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method post">POST</span>
+                <span class="endpoint-path">/api/monitors.php</span>
+            </div>
+            <div class="endpoint-desc">
+                Create a new monitor. Returns a <strong>token</strong> — save it for future checks and deletion.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl -X POST https://pulse-checkerapi.onrender.com/api/monitors.php \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"url": "https://google.com"}'</span></pre>
+
+            <table class="param-table">
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">url</span></td><td>string</td><td>Website URL to monitor <span class="required">required</span></td></tr>
+            </table>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"success"</span>: <span class="keyword">true</span>,
+  <span class="key">"monitor"</span>: {
+    <span class="key">"id"</span>: <span class="number">2</span>,
+    <span class="key">"url"</span>: <span class="string">"https://google.com"</span>,
+    <span class="key">"token"</span>: <span class="string">"a1b2c3d4e5f67890..."</span>,
+    <span class="key">"status"</span>: <span class="string">"pending"</span>
+  }
+}</pre>
+            </div>
+            <p style="color:#f87171; font-size:0.9rem; margin-top:0.5rem;">
+                ⚠️ <strong>Save the token!</strong> You need it to check or delete the monitor.
+            </p>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 4. CHECK MONITOR                                             -->
+        <!-- ============================================================ -->
+        <h2>⚡ Check</h2>
+
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method post">POST</span>
+                <span class="endpoint-path">/api/check.php?id={id}</span>
+            </div>
+            <div class="endpoint-desc">
+                Trigger a manual check for a monitor. Requires the monitor's token in the <span class="inline-code">X-PulseCheck-Token</span> header.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl -X POST https://pulse-checkerapi.onrender.com/api/check.php?id=1 \
+  -H <span class="string">"X-PulseCheck-Token: YOUR_MONITOR_TOKEN"</span></pre>
+
+            <table class="param-table">
+                <tr><th>Header</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">X-PulseCheck-Token</span></td><td>Monitor token <span class="required">required</span></td></tr>
+                <tr><th>Parameter</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">id</span></td><td>Monitor ID <span class="required">required</span></td></tr>
+            </table>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"success"</span>: <span class="keyword">true</span>,
+  <span class="key">"monitor_id"</span>: <span class="number">1</span>,
+  <span class="key">"status"</span>: <span class="string">"up"</span>,
+  <span class="key">"status_code"</span>: <span class="number">200</span>,
+  <span class="key">"response_time"</span>: <span class="number">45</span>,
+  <span class="key">"uptime_24h"</span>: <span class="number">99.8</span>,
+  <span class="key">"checked_at"</span>: <span class="string">"2026-09-04T10:30:00Z"</span>
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 5. HISTORY                                                   -->
+        <!-- ============================================================ -->
+        <h2>📊 History</h2>
+
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="endpoint-path">/api/history.php?id={id}&amp;limit={limit}</span>
+            </div>
+            <div class="endpoint-desc">
+                Retrieve check history for a monitor. Returns up to 500 checks, sorted newest first.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl https://pulse-checkerapi.onrender.com/api/history.php?id=1&amp;limit=10</pre>
+
+            <table class="param-table">
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">id</span></td><td>integer</td><td>Monitor ID <span class="required">required</span></td></tr>
+                <tr><td><span class="inline-code">limit</span></td><td>integer</td><td>Max checks to return (default 100, max 500)</td></tr>
+            </table>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"success"</span>: <span class="keyword">true</span>,
+  <span class="key">"checks"</span>: [
+    {
+      <span class="key">"status_code"</span>: <span class="number">200</span>,
+      <span class="key">"response_time"</span>: <span class="number">45</span>,
+      <span class="key">"success"</span>: <span class="keyword">true</span>,
+      <span class="key">"error_message"</span>: <span class="keyword">null</span>,
+      <span class="key">"checked_at"</span>: <span class="string">"2026-09-04T10:30:00Z"</span>
+    }
+  ]
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 6. DELETE MONITOR                                            -->
+        <!-- ============================================================ -->
+        <h2>🗑️ Delete</h2>
+
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method delete">DELETE</span>
+                <span class="endpoint-path">/api/monitors.php</span>
+            </div>
+            <div class="endpoint-desc">
+                Permanently delete a monitor and all its history. Requires the monitor's token in the <span class="inline-code">X-PulseCheck-Token</span> header.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl -X DELETE https://pulse-checkerapi.onrender.com/api/monitors.php \
+  -H <span class="string">"X-PulseCheck-Token: YOUR_MONITOR_TOKEN"</span> \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"id": 1}'</span></pre>
+
+            <table class="param-table">
+                <tr><th>Header</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">X-PulseCheck-Token</span></td><td>Monitor token <span class="required">required</span></td></tr>
+                <tr><th>Parameter</th><th>Description</th></tr>
+                <tr><td><span class="inline-code">id</span></td><td>Monitor ID <span class="required">required</span></td></tr>
+            </table>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"success"</span>: <span class="keyword">true</span>
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 7. STATUS                                                    -->
+        <!-- ============================================================ -->
+        <h2>📡 API Status</h2>
+
+        <div class="endpoint">
+            <div class="endpoint-header">
+                <span class="method get">GET</span>
+                <span class="endpoint-path">/</span>
+            </div>
+            <div class="endpoint-desc">
+                Check if the API is online and get version information.
+            </div>
+
+            <pre><span class="comment"># Example request</span>
+curl https://pulse-checkerapi.onrender.com/</pre>
+
+            <div class="response-block">
+                <div class="label">Response</div>
+                <pre>{
+  <span class="key">"name"</span>: <span class="string">"PulseCheck API"</span>,
+  <span class="key">"version"</span>: <span class="string">"2.0.0"</span>,
+  <span class="key">"storage"</span>: <span class="string">"file-based"</span>,
+  <span class="key">"status"</span>: <span class="string">"online"</span>
+}</pre>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 8. ERROR CODES                                               -->
+        <!-- ============================================================ -->
+        <h2>🛠️ Error Codes</h2>
+
+        <div style="overflow-x:auto; margin-bottom:2rem;">
+            <table class="param-table" style="min-width:300px;">
+                <tr><th>Code</th><th>Meaning</th></tr>
+                <tr><td><span class="inline-code">200</span></td><td>Success</td></tr>
+                <tr><td><span class="inline-code">201</span></td><td>Created</td></tr>
+                <tr><td><span class="inline-code">401</span></td><td>Unauthorized (missing token)</td></tr>
+                <tr><td><span class="inline-code">403</span></td><td>Invalid token</td></tr>
+                <tr><td><span class="inline-code">404</span></td><td>Monitor not found</td></tr>
+                <tr><td><span class="inline-code">405</span></td><td>Method not allowed</td></tr>
+                <tr><td><span class="inline-code">422</span></td><td>Invalid input</td></tr>
+                <tr><td><span class="inline-code">500</span></td><td>Server error</td></tr>
+            </table>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- FOOTER                                                       -->
+        <!-- ============================================================ -->
+        <footer class="footer">
+            <span>
+                <strong>PulseCheck API</strong> &nbsp;·&nbsp; v2.0.0
+            </span>
+            <span>
+                <a href="https://github.com/logicnestxvoidlure/pulse-checker" target="_blank">GitHub</a>
+                &nbsp;·&nbsp;
+                <a href="https://pulsecheck-umber.vercel.app" target="_blank">Live Demo</a>
+            </span>
+        </footer>
+
+    </div>
+
+    <script>
+        function copyBaseUrl() {
+            const url = document.getElementById('baseUrlDisplay').textContent;
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy', 2000);
+            }).catch(() => {
+                // fallback
+                const input = document.createElement('input');
+                input.value = url;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                const btn = document.querySelector('.copy-btn');
+                btn.textContent = '✅ Copied!';
+                setTimeout(() => btn.textContent = '📋 Copy', 2000);
+            });
+        }
+    </script>
+</body>
+</html>
