@@ -1,14 +1,15 @@
 // ============================================================
-// PULSECHECK - Frontend with CORS Proxy
+// PULSECHECK - Frontend with Vercel Proxy
 // ============================================================
 
-const API = "https://pulse-checkerapi.onrender.com/cors-proxy.php";
+// Use the Vercel proxy (same domain, no CORS issues)
+const API = "/api/proxy.js";
 const $ = s => document.querySelector(s);
 let monitors = [];
 
 // Helper: Build API URLs
 function apiUrl(path, params = {}) {
-    const url = new URL(API);
+    const url = new URL(API, window.location.origin);
     url.searchParams.set('path', path);
     for (const [key, value] of Object.entries(params)) {
         if (value !== undefined && value !== null && value !== '') {
@@ -41,34 +42,40 @@ function delToken(id) {
     localStorage.setItem("pulsecheck_tokens", JSON.stringify(x));
 }
 
-// API wrapper
+// API wrapper with better error handling
 async function api(path, opt = {}, params = {}) {
     const url = apiUrl(path, params);
     console.log('🔍 Fetching:', url);
     
-    const response = await fetch(url, {
-        ...opt,
-        headers: {
-            "Content-Type": "application/json",
-            ...(opt.headers || {})
-        }
-    });
-    
-    let data = {};
     try {
-        data = await response.json();
-    } catch {
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const response = await fetch(url, {
+            ...opt,
+            headers: {
+                "Content-Type": "application/json",
+                ...(opt.headers || {})
+            }
+        });
+        
+        let data = {};
+        try {
+            data = await response.json();
+        } catch {
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            throw new Error('Invalid response from server');
         }
-        throw new Error('Invalid response from server');
+        
+        if (!response.ok) {
+            throw new Error(data.error || `Request failed (${response.status})`);
+        }
+        
+        return data;
+        
+    } catch (error) {
+        console.error('❌ API Error:', error);
+        throw error;
     }
-    
-    if (!response.ok) {
-        throw new Error(data.error || `Request failed (${response.status})`);
-    }
-    
-    return data;
 }
 
 // Helper functions
@@ -112,7 +119,7 @@ function render() {
     stats();
     const l = $("#list");
     if (!monitors.length) {
-        l.innerHTML = '<div class="empty"><b>No monitors yet</b>Add a URL above to create your first monitor.</div>';
+        l.innerHTML = '<div class="empty"><b>No monitors yet</b><br>Add a URL above to create your first monitor.</div>';
         return;
     }
     l.innerHTML = monitors.map(m => `
@@ -154,7 +161,7 @@ async function load(note = false) {
             <div class="empty">
                 <b>Could not reach API</b><br>
                 ${esc(e.message)}<br><br>
-                <span style="font-size:12px;color:#666;">Proxy: ${API}</span>
+                <span style="font-size:12px;color:#666;">Using proxy: ${API}</span>
             </div>
         `;
     }
