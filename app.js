@@ -1,17 +1,21 @@
 // ============================================================
-// PULSECHECK - Frontend (Vercel)
-// Backend API: Render
+// PULSECHECK - Frontend with CORS Proxy
 // ============================================================
 
-// ✅ CORRECT API URL (no trailing slash)
-const API = "https://pulse-checkerapi.onrender.com";
-
+const API = "https://pulse-checkerapi.onrender.com/cors-proxy.php";
 const $ = s => document.querySelector(s);
 let monitors = [];
 
-// Debug function
-function debug(msg, data) {
-    console.log(`🐛 ${msg}:`, data || '');
+// Helper: Build API URLs
+function apiUrl(path, params = {}) {
+    const url = new URL(API);
+    url.searchParams.set('path', path);
+    for (const [key, value] of Object.entries(params)) {
+        if (value !== undefined && value !== null && value !== '') {
+            url.searchParams.set(key, value);
+        }
+    }
+    return url.toString();
 }
 
 // Token management
@@ -37,44 +41,34 @@ function delToken(id) {
     localStorage.setItem("pulsecheck_tokens", JSON.stringify(x));
 }
 
-// API wrapper with better error handling
-async function api(path, opt = {}) {
-    const url = API + path;
-    debug('Fetching URL', url);
+// API wrapper
+async function api(path, opt = {}, params = {}) {
+    const url = apiUrl(path, params);
+    console.log('🔍 Fetching:', url);
     
+    const response = await fetch(url, {
+        ...opt,
+        headers: {
+            "Content-Type": "application/json",
+            ...(opt.headers || {})
+        }
+    });
+    
+    let data = {};
     try {
-        const response = await fetch(url, {
-            ...opt,
-            headers: {
-                "Content-Type": "application/json",
-                ...(opt.headers || {})
-            }
-        });
-        
-        debug('Response status', response.status);
-        
-        let data = {};
-        try {
-            data = await response.json();
-        } catch (e) {
-            debug('JSON parse error', e);
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-            throw new Error('Invalid response from server');
-        }
-        
+        data = await response.json();
+    } catch {
         if (!response.ok) {
-            throw new Error(data.error || `Request failed (${response.status})`);
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
-        debug('Response data', data);
-        return data;
-        
-    } catch (error) {
-        debug('Fetch error', error);
-        throw error;
+        throw new Error('Invalid response from server');
     }
+    
+    if (!response.ok) {
+        throw new Error(data.error || `Request failed (${response.status})`);
+    }
+    
+    return data;
 }
 
 // Helper functions
@@ -145,26 +139,22 @@ function render() {
     `).join("");
 }
 
-// Load monitors with better error handling
+// Load monitors
 async function load(note = false) {
     try {
-        debug('🔄 Loading monitors from', API + '/api/monitors.php');
-        
-        const data = await api("/api/monitors.php");
+        const data = await api('monitors');
         monitors = data.monitors || [];
         render();
         $("#apiState").textContent = "API online ✅";
         if (note) toast("Refreshed ✅");
-        
     } catch (e) {
-        console.error('❌ Load error:', e);
+        console.error('Load error:', e);
         $("#apiState").textContent = "API unavailable ❌";
         $("#list").innerHTML = `
             <div class="empty">
                 <b>Could not reach API</b><br>
                 ${esc(e.message)}<br><br>
-                <span style="font-size:12px;color:#666;">API: ${API}</span><br>
-                <span style="font-size:11px;color:#888;">Check console (F12) for details</span>
+                <span style="font-size:12px;color:#666;">Proxy: ${API}</span>
             </div>
         `;
     }
@@ -182,7 +172,7 @@ $("#addForm").addEventListener("submit", async e => {
     $("#msg").textContent = "Creating monitor…";
     
     try {
-        const data = await api("/api/monitors.php", {
+        const data = await api('monitors', {
             method: "POST",
             body: JSON.stringify({ url: u })
         });
@@ -225,7 +215,7 @@ $("#list").addEventListener("click", async e => {
         h.innerHTML = "Loading…";
         
         try {
-            const data = await api(`/api/history.php?id=${id}&limit=12`);
+            const data = await api('history', {}, { id, limit: 12 });
             const checks = data.checks || [];
             h.innerHTML = checks.length ? checks.map(x => `
                 <div class="historyItem">
@@ -253,10 +243,10 @@ $("#list").addEventListener("click", async e => {
         b.disabled = true;
         b.textContent = "Checking…";
         try {
-            const result = await api(`/api/check.php?id=${id}`, {
+            const result = await api('check', {
                 method: "POST",
                 headers: { "X-PulseCheck-Token": t }
-            });
+            }, { id });
             toast(`Check complete: ${result.status === 'up' ? '✅ UP' : '❌ DOWN'}`);
             await load();
         } catch (err) {
@@ -274,7 +264,7 @@ $("#list").addEventListener("click", async e => {
         if (!confirm("Delete this monitor and its history?")) return;
         b.disabled = true;
         try {
-            await api(`/api/monitors.php`, {
+            await api('monitors', {
                 method: "DELETE",
                 headers: { "X-PulseCheck-Token": t },
                 body: JSON.stringify({ id })
