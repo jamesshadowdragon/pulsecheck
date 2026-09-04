@@ -1,13 +1,7 @@
-// ============================================================
-// PULSECHECK - Frontend with Vercel Proxy
-// ============================================================
-
-// Use the Vercel proxy (same domain, no CORS issues)
 const API = "/api/proxy.js";
 const $ = s => document.querySelector(s);
 let monitors = [];
 
-// Helper: Build API URLs
 function apiUrl(path, params = {}) {
     const url = new URL(API, window.location.origin);
     url.searchParams.set('path', path);
@@ -19,7 +13,6 @@ function apiUrl(path, params = {}) {
     return url.toString();
 }
 
-// Token management
 const tokens = () => {
     try {
         return JSON.parse(localStorage.getItem("pulsecheck_tokens") || "{}");
@@ -42,7 +35,6 @@ function delToken(id) {
     localStorage.setItem("pulsecheck_tokens", JSON.stringify(x));
 }
 
-// API wrapper with better error handling
 async function api(path, opt = {}, params = {}) {
     const url = apiUrl(path, params);
     console.log('🔍 Fetching:', url);
@@ -78,7 +70,6 @@ async function api(path, opt = {}, params = {}) {
     }
 }
 
-// Helper functions
 function host(u) {
     try {
         return new URL(u).hostname.replace(/^www\./, "");
@@ -105,7 +96,6 @@ function toast(t) {
     window.__tt = setTimeout(() => e.classList.remove("show"), 2600);
 }
 
-// Stats
 function stats() {
     $("#total").textContent = monitors.length;
     $("#up").textContent = monitors.filter(x => x.status === "up").length;
@@ -114,7 +104,6 @@ function stats() {
     $("#avg").textContent = a.length ? Math.round(a.reduce((x, y) => x + y, 0) / a.length) + " ms" : "—";
 }
 
-// Render monitors
 function render() {
     stats();
     const l = $("#list");
@@ -146,7 +135,6 @@ function render() {
     `).join("");
 }
 
-// Load monitors
 async function load(note = false) {
     try {
         const data = await api('monitors');
@@ -167,7 +155,6 @@ async function load(note = false) {
     }
 }
 
-// Event: Add monitor
 $("#addForm").addEventListener("submit", async e => {
     e.preventDefault();
     let u = $("#urlInput").value.trim();
@@ -201,10 +188,8 @@ $("#addForm").addEventListener("submit", async e => {
     }
 });
 
-// Event: Refresh
 $("#refresh").onclick = () => load(true);
 
-// Event: Card actions
 $("#list").addEventListener("click", async e => {
     const b = e.target.closest("button[data-a]");
     if (!b) return;
@@ -213,7 +198,6 @@ $("#list").addEventListener("click", async e => {
     const id = +c.dataset.id;
     const a = b.dataset.a;
     
-    // History
     if (a === "history") {
         c.classList.toggle("open");
         if (!c.classList.contains("open")) return;
@@ -237,7 +221,6 @@ $("#list").addEventListener("click", async e => {
         return;
     }
     
-    // Token check
     let t = token(id);
     if (!t) {
         t = prompt("Paste the secret token for monitor #" + id);
@@ -245,7 +228,6 @@ $("#list").addEventListener("click", async e => {
         saveToken(id, t);
     }
     
-    // Check now
     if (a === "check") {
         b.disabled = true;
         b.textContent = "Checking…";
@@ -266,7 +248,6 @@ $("#list").addEventListener("click", async e => {
         }
     }
     
-    // Delete
     if (a === "delete") {
         if (!confirm("Delete this monitor and its history?")) return;
         b.disabled = true;
@@ -290,8 +271,5 @@ $("#list").addEventListener("click", async e => {
     }
 });
 
-// Initial load
 load();
-
-// Auto-refresh every 30 seconds
 setInterval(() => load(), 30000);
