@@ -3,11 +3,16 @@
 // Backend API: Render
 // ============================================================
 
-// ✅ CORRECTED - No trailing slash
+// ✅ CORRECT API URL (no trailing slash)
 const API = "https://pulse-checkerapi.onrender.com";
 
 const $ = s => document.querySelector(s);
 let monitors = [];
+
+// Debug function
+function debug(msg, data) {
+    console.log(`🐛 ${msg}:`, data || '');
+}
 
 // Token management
 const tokens = () => {
@@ -32,33 +37,44 @@ function delToken(id) {
     localStorage.setItem("pulsecheck_tokens", JSON.stringify(x));
 }
 
-// API wrapper
+// API wrapper with better error handling
 async function api(path, opt = {}) {
     const url = API + path;
-    console.log('Fetching:', url); // Debug log
-    const response = await fetch(url, {
-        ...opt,
-        headers: {
-            "Content-Type": "application/json",
-            ...(opt.headers || {})
-        }
-    });
+    debug('Fetching URL', url);
     
-    let data = {};
     try {
-        data = await response.json();
-    } catch {
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        const response = await fetch(url, {
+            ...opt,
+            headers: {
+                "Content-Type": "application/json",
+                ...(opt.headers || {})
+            }
+        });
+        
+        debug('Response status', response.status);
+        
+        let data = {};
+        try {
+            data = await response.json();
+        } catch (e) {
+            debug('JSON parse error', e);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            throw new Error('Invalid response from server');
         }
-        throw new Error('Invalid response from server');
+        
+        if (!response.ok) {
+            throw new Error(data.error || `Request failed (${response.status})`);
+        }
+        
+        debug('Response data', data);
+        return data;
+        
+    } catch (error) {
+        debug('Fetch error', error);
+        throw error;
     }
-    
-    if (!response.ok) {
-        throw new Error(data.error || `Request failed (${response.status})`);
-    }
-    
-    return data;
 }
 
 // Helper functions
@@ -129,22 +145,26 @@ function render() {
     `).join("");
 }
 
-// Load monitors
+// Load monitors with better error handling
 async function load(note = false) {
     try {
+        debug('🔄 Loading monitors from', API + '/api/monitors.php');
+        
         const data = await api("/api/monitors.php");
         monitors = data.monitors || [];
         render();
         $("#apiState").textContent = "API online ✅";
         if (note) toast("Refreshed ✅");
+        
     } catch (e) {
-        console.error('Load error:', e);
+        console.error('❌ Load error:', e);
         $("#apiState").textContent = "API unavailable ❌";
         $("#list").innerHTML = `
             <div class="empty">
                 <b>Could not reach API</b><br>
                 ${esc(e.message)}<br><br>
-                <span style="font-size:12px;color:#666;">API: ${API}</span>
+                <span style="font-size:12px;color:#666;">API: ${API}</span><br>
+                <span style="font-size:11px;color:#888;">Check console (F12) for details</span>
             </div>
         `;
     }
