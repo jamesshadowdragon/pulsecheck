@@ -3,7 +3,7 @@
 // Backend API: Render
 // ============================================================
 
-// ✅ UPDATE THIS to your Render API URL
+// ✅ CORRECTED - No trailing slash
 const API = "https://pulse-checkerapi.onrender.com";
 
 const $ = s => document.querySelector(s);
@@ -35,6 +35,7 @@ function delToken(id) {
 // API wrapper
 async function api(path, opt = {}) {
     const url = API + path;
+    console.log('Fetching:', url); // Debug log
     const response = await fetch(url, {
         ...opt,
         headers: {
