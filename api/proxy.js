@@ -7,7 +7,7 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    const API_URL = 'https://pulseapi-production-3976.up.railway.app/';
+    const API_URL = 'https://pulseapi-production-3976.up.railway.app';
     
     const path = req.query.path || 'monitors';
     let targetPath = '';
