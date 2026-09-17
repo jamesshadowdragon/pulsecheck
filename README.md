@@ -54,7 +54,7 @@ app.js        # Full JavaScript application
 The dashboard is pre-configured to use the public PulseCheck API:
 
 ```
-https://pulse-checkerapi.onrender.com
+https://pulseapi-production-3976.up.railway.app/
 ```
 
 ### Using Your Own API
@@ -78,7 +78,7 @@ If you want to use the Vercel proxy to avoid CORS issues:
 1. Open `api/proxy.js`
 2. Find this line:
    ```javascript
-   const API_URL = 'https://pulse-checkerapi.onrender.com';
+   const API_URL = 'https://pulseapi-production-3976.up.railway.app/';
    ```
 3. Replace with your API URL:
    ```javascript
@@ -194,7 +194,7 @@ header('Access-Control-Allow-Headers: Content-Type, X-PulseCheck-Token');
 ## 🔗 Links
 
 - **Live Demo:** https://pulsecheck-umber.vercel.app
-- **Backend API:** https://pulse-checkerapi.onrender.com
+- **Backend API:** https://pulseapi-production-3976.up.railway.app/
 - **Repository:** https://github.com/logicnestxvoidlure/pulse-checker
 - **API Documentation:** [API Docs](https://pulsecheck-umber.vercel.app/apidocs.html)
 

@@ -1,5 +1,5 @@
 {
     "env": {
-        "API_URL": "https://pulse-checkerapi.onrender.com"
+        "API_URL": "https://pulseapi-production-3976.up.railway.app/"
     }
 }
